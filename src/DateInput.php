@@ -72,17 +72,19 @@ class DateInput extends BaseControl  {
 		self::TYPE_WEEK => 'o-\WW'
 	];
 
-	public static function register($immutable = true, $methodName = 'addDate'): void {
+	public static function register($immutable = true, $methodName = 'addDate2'): void {
 		Container::extensionMethod($methodName, static function (
 			Container $form,
 			string $name,
-			string $label = null,
+			?string $label = null,
 			string $type = self::TYPE_DATETIME_LOCAL
 		) use ($immutable) {
 			$component = new self($label, $type, $immutable);
 			$form->addComponent($component, $name);
 			$component->setRequired(false);
-			$component->addRule([__CLASS__, 'validateValid'], self::$defaultValidMessage);
+			$component->addRule(static function(self $control) {
+				return self::validateValid($control);
+			}, self::$defaultValidMessage);
 			return $component;
 		});
 		Validator::$messages[__CLASS__.'::validateDateInputRange'] = Validator::$messages[Form::RANGE];
@@ -94,11 +96,12 @@ class DateInput extends BaseControl  {
 	 * @param bool $immutable
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(string $label = null, string $type = self::TYPE_DATETIME_LOCAL, bool $immutable = true) {
+	public function __construct(?string $label = null, string $type = self::TYPE_DATETIME_LOCAL, bool $immutable = true) {
 		if (!isset(self::$formats[$type])) {
 			throw new \InvalidArgumentException("invalid type '$type' given.");
 		}
 		parent::__construct($label);
+		bd ('xxx');
 		$this->control->type = $this->type = $type;
 		$this->control->data('dateinput-type', $type);
 
@@ -170,7 +173,7 @@ class DateInput extends BaseControl  {
 		return ($control->value !== null || $control->submittedValue !== null);
 	}
 
-	public static function validateValid(IControl $control): bool {
+	private static function validateValid(IControl $control): bool {
 		if (!$control instanceof self) {
 			throw new \InvalidArgumentException("Cant't validate control '".\get_class($control)."'.");
 		}

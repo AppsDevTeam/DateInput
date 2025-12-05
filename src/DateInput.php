@@ -101,7 +101,6 @@ class DateInput extends BaseControl  {
 			throw new \InvalidArgumentException("invalid type '$type' given.");
 		}
 		parent::__construct($label);
-		bd ('xxx');
 		$this->control->type = $this->type = $type;
 		$this->control->data('dateinput-type', $type);
 
